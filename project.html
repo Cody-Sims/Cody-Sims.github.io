@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Lifetime Scrapbook</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles to complement Tailwind */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f0e8; /* Warm, off-white paper texture */
+            background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23d4c7b0' fill-opacity='0.2'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .font-kalam {
+            font-family: 'Kalam', cursive;
+        }
+
+        /* Scrapbook page container */
+        .scrapbook-page {
+            width: 95%;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background-color: #fffaf0; /* Creamy white page */
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 0 0 10px #ede4d5; /* Page shadow and border */
+            position: relative;
+            min-height: 80vh; /* Ensure page has some height */
+            overflow: hidden; /* Prevent elements from spilling out too much */
+        }
+
+        /* Focused image styling */
+        .focused-image-container {
+            position: relative; /* For z-index and absolute positioning of caption */
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem; /* Space below focused image and its caption */
+            padding: 10px; /* Padding around the image to simulate a photo border */
+            background-color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            border-radius: 4px;
+            transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+        }
+
+        .focused-image-container img {
+            max-width: 100%; /* Responsive image */
+            max-height: 50vh; /* Limit height */
+            object-fit: contain;
+            border-radius: 2px; /* Slight rounding for the photo itself */
+        }
+        
+        .focused-image-container.loading {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        /* Caption styling */
+        .caption-area {
+            margin-top: 0.75rem; /* Space between image and caption */
+            padding: 0.75rem 1rem;
+            background-color: #fffff0; /* Light yellow note paper */
+            border: 1px dashed #ccc;
+            border-radius: 4px;
+            text-align: center;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+            max-width: 80%;
+        }
+        .caption-text {
+            font-size: 1.1rem; /* Slightly larger for readability */
+            color: #5a4a3a; /* Brownish text */
+        }
+        .caption-date {
+            font-size: 0.85rem;
+            color: #7a6a5a;
+            margin-top: 0.25rem;
+        }
+
+        /* Collage area for other images */
+        .collage-area {
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            justify-content: center;
+            align-items: center;
+            gap: 1rem; /* Spacing between collage items */
+            padding: 1rem 0;
+            position: relative; /* For absolute positioning of collage items if needed */
+            min-height: 200px; /* Ensure space for collage items */
+        }
+
+        .collage-item {
+            cursor: pointer;
+            padding: 6px; /* Simulates photo border */
+            background-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            border-radius: 3px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: clamp(100px, 15vw, 180px); /* Responsive width */
+            height: auto;
+        }
+        .collage-item:hover {
+            transform: scale(1.1) rotate(0deg) !important; /* Override random rotation on hover for easier clicking */
+            box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+            z-index: 5; /* Bring hovered item to front of siblings */
+        }
+        .collage-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 1px;
+        }
+
+        /* Navigation buttons */
+        .nav-button {
+            background-color: #c0a080; /* Dusty rose / muted brown */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px; /* Pill shape */
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .nav-button:hover {
+            background-color: #a08060; /* Darker shade on hover */
+            transform: translateY(-2px);
+        }
+        .nav-button:active {
+            transform: translateY(0px);
+        }
+        .nav-button:disabled {
+            background-color: #d3c1b1;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Message Box Styling */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4A5568; /* Tailwind gray-700 */
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.375rem; /* Tailwind rounded-md */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Tailwind shadow-md */
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            font-size: 0.875rem; /* Tailwind text-sm */
+        }
+
+        .message-box.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+    </style>
+</head>
+<body class="flex flex-col items-center justify-start min-h-screen p-4 md:p-8">
+
+    <header class="my-6 md:my-10 text-center">
+        <h1 class="text-4xl md:text-5xl font-kalam text-amber-700">Our Lifetime of Memories</h1>
+        <p class="text-lg text-amber-600 mt-2">A scrapbook journey through the years</p>
+    </header>
+
+    <main id="scrapbookApp" class="scrapbook-page w-full">
+        <section id="focusedImageSection" class="mb-8 flex flex-col items-center">
+            <div id="focusedImageContainer" class="focused-image-container w-full md:w-3/4 lg:w-1/2">
+                <img id="mainImage" src="" alt="Focused memory" class="object-contain rounded">
+            </div>
+            <div id="captionArea" class="caption-area font-kalam">
+                <p id="imageCaption" class="caption-text"></p>
+                <p id="imageDate" class="caption-date"></p>
+            </div>
+        </section>
+
+        <nav class="flex justify-center items-center space-x-4 my-6">
+            <button id="prevButton" class="nav-button">Previous</button>
+            <button id="nextButton" class="nav-button">Next</button>
+        </nav>
+
+        <section id="collageArea" class="collage-area">
+            </section>
+    </main>
+
+    <footer class="text-center py-8 text-amber-700">
+        <p class="font-kalam">&copy; <span id="currentYear"></span> Our Cherished Moments</p>
+    </footer>
+
+    <div id="messageBox" class="message-box">This is a message!</div>
+
+    <script>        // --- CONFIGURATION ---
+        const IMAGES_DATA = [
+            {
+                id: 1,
+                src: 'IMG_8451.JPG',
+                caption: "Add your caption here",
+                date: "July 15, 2010",
+                alt: "Vacation memory",
+                type: "image"
+            },
+            {
+                id: 2,
+                src: 'IMG_8520.JPG',
+                caption: "Add your caption here",
+                date: "May 20, 2012",
+                alt: "Graduation celebration",
+                type: "image"
+            },
+            {
+                id: 3,
+                src: 'IMG_8622.JPG',
+                caption: "Add your caption here",
+                date: "June 10, 2013",
+                alt: "Special moment",
+                type: "image"
+            },
+            {
+                id: 4,
+                src: 'IMG_0617.HEIC',
+                caption: "Add your caption here",
+                date: "August 5, 2015",
+                alt: "Mountain hike view",
+                type: "heic"
+            },
+            {
+                id: 5,
+                src: 'IMG_0128.HEIC',
+                caption: "Add your caption here",
+                date: "November 22, 2016",
+                alt: "Special event",
+                type: "heic"
+            },
+            {
+                id: 6,
+                src: 'IMG_1567.MP4',
+                caption: "Add your caption here",
+                date: "March 10, 2017",
+                alt: "Special video moment",
+                type: "video",
+                poster: 'IMG_1567.JPG'
+            },
+            {
+                id: 7,
+                src: 'IMG_0347.JPG',
+                caption: "Add your caption here",
+                date: "October 27, 2018",
+                alt: "Special celebration",
+                type: "image"
+            },
+            {
+                id: 8,
+                src: 'IMG_0648.HEIC',
+                caption: "Add your caption here",
+                date: "February 14, 2019",
+                alt: "Valentine's Day",
+                type: "heic"
+            },
+            {
+                id: 9,
+                src: 'IMG_4344.JPG',
+                caption: "Add your caption here",
+                date: "July 4, 2020",
+                alt: "Summer celebration",
+                type: "image"
+            },
+            {
+                id: 10,
+                src: 'IMG_4356.JPG',
+                caption: "Add your caption here",
+                date: "September 12, 2021",
+                alt: "Fall memories",
+                type: "image"
+            },
+            {
+                id: 11,
+                src: 'IMG_1647.MP4',
+                caption: "Add your caption here",
+                date: "June 12, 2022",
+                alt: "Fun video",
+                type: "video",
+                poster: 'IMG_1647.JPG'
+            },
+            {
+                id: 12,
+                src: 'IMG_2025.HEIC',
+                caption: "Add your caption here",
+                date: "March 15, 2023",
+                alt: "Spring memories",
+                type: "heic"
+            },
+            {
+                id: 13,
+                src: 'IMG_1829.HEIC',
+                caption: "Add your caption here",
+                date: "December 3, 2023",
+                alt: "Winter scene",
+                type: "heic"
+            },
+            {
+                id: 14,
+                src: 'IMG_2717.HEIC',
+                caption: "Add your caption here",
+                date: "January 30, 2024",
+                alt: "New year memories",
+                type: "heic"
+            },
+            {
+                id: 15,
+                src: 'IMG_2822.HEIC',
+                caption: "Add your caption here",
+                date: "February 28, 2024",
+                alt: "Late winter scene",
+                type: "heic"
+            },
+            {
+                id: 16,
+                src: '61610650245__62FF7127-4098-4F3C-9269-D65508973DB4.JPG',
+                caption: "Add your caption here",
+                date: "April 18, 2024",
+                alt: "City exploration",
+                type: "image"
+            }
+        ];        // --- STATE ---
+        let currentImageIndex = 0;
+        let collageRendered = false;        // Track if collage has been rendered
+        let lastRenderedIndex = -1;        // Track which image was focused when last rendered
+        const MAX_COLLAGE_ITEMS = 6;       // Max number of items in the collage strip
+        let loadedImages = {};             // Cache for loaded images
+
+        // --- DOM ELEMENTS ---
+        const mainImageEl = document.getElementById('mainImage');
+        const focusedImageContainerEl = document.getElementById('focusedImageContainer');
+        const imageCaptionEl = document.getElementById('imageCaption');
+        const imageDateEl = document.getElementById('imageDate');
+        const prevButton = document.getElementById('prevButton');
+        const nextButton = document.getElementById('nextButton');
+        const collageAreaEl = document.getElementById('collageArea');
+        const messageBoxEl = document.getElementById('messageBox');
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        // --- FUNCTIONS ---
+
+        /**
+         * Custom message display function instead of alert().
+         * @param {string} message - The message to display.
+         * @param {number} duration - How long to display the message in milliseconds.
+         */
+        function showMessage(message, duration = 3000) {
+            messageBoxEl.textContent = message;
+            messageBoxEl.classList.add('show');
+            setTimeout(() => {
+                messageBoxEl.classList.remove('show');
+            }, duration);
+        }        /**
+         * Displays the image or media at the given index as the focused content.
+         * @param {number} index - The index of the image in IMAGES_DATA.
+         */
+        function displayFocusedImage(index) {
+            if (index < 0 || index >= IMAGES_DATA.length) {
+                console.error("Invalid image index:", index);
+                showMessage("Error: Could not load media.", 3000);
+                return;
+            }
+            currentImageIndex = index;
+            const imageData = IMAGES_DATA[index];
+
+            // Add loading state for smoother transition
+            focusedImageContainerEl.classList.add('loading');
+            
+            // Clear the previous content
+            while (focusedImageContainerEl.firstChild) {
+                if (focusedImageContainerEl.firstChild !== mainImageEl) {
+                    focusedImageContainerEl.removeChild(focusedImageContainerEl.firstChild);
+                }
+            }
+            
+            // Update caption and date immediately for better user experience
+            imageCaptionEl.textContent = imageData.caption;
+            
+            if (imageData.type === 'video') {
+                // Create a video element for video content
+                const videoEl = document.createElement('video');
+                videoEl.controls = true;
+                videoEl.preload = 'metadata'; // Only load metadata initially for better performance
+                videoEl.className = 'max-w-full max-h-[50vh] object-contain rounded';
+                videoEl.setAttribute('playsinline', ''); // Better mobile support
+                
+                if (imageData.poster) {
+                    videoEl.poster = imageData.poster;
+                    // Show the poster immediately
+                    mainImageEl.style.display = 'none';
+                    focusedImageContainerEl.appendChild(videoEl);
+                }
+                
+                // Set timeout to prevent UI blocking
+                setTimeout(() => {
+                    videoEl.src = imageData.src;
+                    videoEl.addEventListener('loadedmetadata', () => {
+                        // Replace the image with the video if not already done
+                        mainImageEl.style.display = 'none';
+                        if (!videoEl.parentNode) {
+                            focusedImageContainerEl.appendChild(videoEl);
+                        }
+                        focusedImageContainerEl.classList.remove('loading');
+                        
+                        // Update navigation
+                        imageDateEl.textContent = `Captured: ${imageData.date}`;
+                        updateNavButtons();
+                        // Only render collage if it's not already rendered with correct focus
+                        if (!collageRendered || lastRenderedIndex !== index) {
+                            renderCollageArea();
+                            collageRendered = true;
+                            lastRenderedIndex = index;
+                        }
+                    });
+                    
+                    videoEl.onerror = () => {
+                        handleMediaError(imageData);
+                    };
+                }, 100); // Small delay to prevent UI blocking
+            } else if (imageData.type === 'heic') {
+                // For HEIC images, attempt to use a fallback JPG with same name if browser doesn't support HEIC
+                mainImageEl.style.display = 'block';
+                
+                // Display a placeholder or loading state immediately
+                mainImageEl.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150"%3E%3Crect width="200" height="150" fill="%23f8f8f8"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="14" fill="%23888" text-anchor="middle" alignment-baseline="middle"%3ELoading HEIC...%3C/text%3E%3C/svg%3E';
+                imageDateEl.textContent = `Captured: ${imageData.date} (HEIC format)`;
+                
+                // Try loading the HEIC directly first
+                const tempImg = new Image();
+                tempImg.onload = () => {
+                    mainImageEl.src = imageData.src;
+                    mainImageEl.alt = imageData.alt || `Memory from ${imageData.date}`;
+                    focusedImageContainerEl.classList.remove('loading');
+                    updateNavButtons();
+                    // Only render collage if needed
+                    if (!collageRendered || lastRenderedIndex !== index) {
+                        renderCollageArea();
+                        collageRendered = true;
+                        lastRenderedIndex = index;
+                    }
+                };
+                tempImg.onerror = () => {
+                    // If HEIC fails, try using a fallback pattern - check for JPG version
+                    const jpgFallback = imageData.src.replace('.HEIC', '.JPG').replace('.heic', '.jpg');
+                    const fallbackImg = new Image();
+                    fallbackImg.onload = () => {
+                        mainImageEl.src = jpgFallback;
+                        mainImageEl.alt = imageData.alt || `Memory from ${imageData.date}`;
+                        focusedImageContainerEl.classList.remove('loading');
+                        updateNavButtons();
+                        // Only render collage if needed
+                        if (!collageRendered || lastRenderedIndex !== index) {
+                            renderCollageArea();
+                            collageRendered = true;
+                            lastRenderedIndex = index;
+                        }
+                    };
+                    fallbackImg.onerror = () => {
+                        handleMediaError(imageData);
+                    };
+                    fallbackImg.src = jpgFallback;
+                };
+                
+                // Set a timeout to prevent UI blocking
+                setTimeout(() => {
+                    tempImg.src = imageData.src;
+                }, 50);
+            } else {
+                // Regular image loading - optimize with progressive loading
+                mainImageEl.style.display = 'block';
+                
+                // Show a low-res placeholder immediately
+                mainImageEl.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150"%3E%3Crect width="200" height="150" fill="%23f8f8f8"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="14" fill="%23888" text-anchor="middle" alignment-baseline="middle"%3ELoading...%3C/text%3E%3C/svg%3E';
+                mainImageEl.alt = imageData.alt || `Memory from ${imageData.date}`;
+                imageDateEl.textContent = `Captured: ${imageData.date}`;
+                
+                const tempImg = new Image();
+                tempImg.onload = () => {
+                    mainImageEl.src = imageData.src;
+                    focusedImageContainerEl.classList.remove('loading');
+                    updateNavButtons();
+                    // Only render collage if needed
+                    if (!collageRendered || lastRenderedIndex !== index) {
+                        renderCollageArea();
+                        collageRendered = true;
+                        lastRenderedIndex = index;
+                    }
+                };
+                tempImg.onerror = () => {
+                    handleMediaError(imageData);
+                };
+                
+                // Set timeout to prevent UI blocking
+                setTimeout(() => {
+                    tempImg.src = imageData.src;
+                }, 50);
+            }
+        }
+          /**
+         * Handles errors when loading media files.
+         * Uses a lightweight data URI fallback for better performance.
+         * @param {Object} imageData - The media data object from IMAGES_DATA.
+         */
+        function handleMediaError(imageData) {
+            console.error("Error loading media:", imageData.src);
+            showMessage(`Failed to load: ${imageData.alt || 'media'}`, 3000);
+            mainImageEl.style.display = 'block';
+            
+            // Use SVG for better performance than external placeholder
+            mainImageEl.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"%3E%3Crect width="600" height="400" fill="%23ccc"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="24" fill="%23999" text-anchor="middle" alignment-baseline="middle"%3EMedia Not Found%3C/text%3E%3C/svg%3E';
+            mainImageEl.alt = "Media not found";
+            imageCaptionEl.textContent = "Oops! This memory seems to be hiding.";
+            imageDateEl.textContent = "";
+            focusedImageContainerEl.classList.remove('loading');
+            updateNavButtons();
+            
+            // Only render collage if needed
+            if (!collageRendered || lastRenderedIndex !== currentImageIndex) {
+                renderCollageArea();
+                collageRendered = true;
+                lastRenderedIndex = currentImageIndex;
+            }
+        }        /**
+         * Renders the collage of other images, excluding the currently focused one.
+         * Optimized to avoid unnecessary DOM operations.
+         */
+        function renderCollageArea() {
+            // Performance optimization: Check if collage needs re-rendering
+            const documentFragment = document.createDocumentFragment(); // Use fragment for better performance
+            collageAreaEl.innerHTML = ''; // Clear previous collage items
+
+            // Determine which images to show in the collage
+            const otherImages = IMAGES_DATA.filter((_, i) => i !== currentImageIndex);
+            
+            // For consistent navigation experience, show adjacent images and some random ones
+            let collageItemsToShow = [];
+            
+            // Add a few images before and after current index if they exist
+            const before = currentImageIndex > 0 ? 
+                IMAGES_DATA.slice(Math.max(0, currentImageIndex - 2), currentImageIndex) : [];
+            
+            const after = currentImageIndex < IMAGES_DATA.length - 1 ? 
+                IMAGES_DATA.slice(currentImageIndex + 1, Math.min(IMAGES_DATA.length, currentImageIndex + 3)) : [];
+            
+            // Fill remaining slots with random images
+            let remainingSlots = MAX_COLLAGE_ITEMS - before.length - after.length;
+            let randomItems = [];
+            
+            if (remainingSlots > 0) {
+                // Filter out the already included images
+                const includedIndices = new Set([
+                    ...before.map(item => item.id),
+                    ...after.map(item => item.id),
+                    IMAGES_DATA[currentImageIndex].id
+                ]);
+                
+                const availableForRandom = otherImages.filter(item => !includedIndices.has(item.id));
+                
+                // Get random selection from remaining items
+                const shuffled = [...availableForRandom].sort(() => 0.5 - Math.random());
+                randomItems = shuffled.slice(0, remainingSlots);
+            }
+            
+            // Combine and shuffle slightly for visual interest
+            collageItemsToShow = [...before, ...after, ...randomItems].sort(() => 0.3 - Math.random());
+            
+            // Limit to max items
+            collageItemsToShow = collageItemsToShow.slice(0, MAX_COLLAGE_ITEMS);
+            
+            // Create the collage items in a loop
+            collageItemsToShow.forEach(imgData => {
+                const originalIndex = IMAGES_DATA.findIndex(item => item.id === imgData.id);
+                const itemDiv = document.createElement('div');
+                itemDiv.classList.add('collage-item');
+                
+                // Apply a random rotation for the scrapbook effect
+                const rotation = Math.floor(Math.random() * 16) - 8; // -8 to +8 degrees (less extreme for better performance)
+                itemDiv.style.transform = `rotate(${rotation}deg)`;
+                itemDiv.style.position = 'relative'; // Set position for all items for consistency
+                
+                const imgEl = document.createElement('img');
+                imgEl.loading = 'lazy'; // Native lazy loading for thumbnails
+                imgEl.alt = imgData.alt || `Thumbnail of memory ${imgData.id}`;
+                
+                // For video thumbnails, use the poster image if available
+                if (imgData.type === 'video' && imgData.poster) {
+                    imgEl.src = imgData.poster;
+                    
+                    // Simplified play icon as text for better performance
+                    const playIcon = document.createElement('div');
+                    playIcon.innerHTML = '▶';
+                    playIcon.style.cssText = 
+                        'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);' +
+                        'background-color:rgba(0,0,0,0.5);color:white;border-radius:50%;' +
+                        'width:25px;height:25px;display:flex;align-items:center;' +
+                        'justify-content:center;font-size:14px;';
+                    
+                    itemDiv.appendChild(playIcon);
+                } else {
+                    // For regular images and HEIC, use the source directly
+                    imgEl.src = imgData.src;
+                    
+                    // Add a small indicator for HEIC files
+                    if (imgData.type === 'heic') {
+                        const heicBadge = document.createElement('div');
+                        heicBadge.textContent = 'HEIC';
+                        heicBadge.style.cssText = 
+                            'position:absolute;bottom:2px;right:2px;background-color:rgba(0,0,0,0.5);' +
+                            'color:white;padding:2px 4px;border-radius:3px;font-size:8px;';
+                        
+                        itemDiv.appendChild(heicBadge);
+                    }
+                }
+                
+                imgEl.onerror = () => { // Fallback for collage images
+                    imgEl.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"%3E%3Crect width="150" height="150" fill="%23ccc"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="14" fill="%23999" text-anchor="middle" alignment-baseline="middle"%3EError%3C/text%3E%3C/svg%3E';
+                    imgEl.alt = 'Error loading thumbnail';
+                }
+
+                itemDiv.appendChild(imgEl);
+                
+                // Add click event with a shorter message
+                itemDiv.addEventListener('click', () => {
+                    displayFocusedImage(originalIndex);
+                });
+                
+                documentFragment.appendChild(itemDiv);
+            });
+            
+            // Append all items at once for better performance
+            collageAreaEl.appendChild(documentFragment);
+        }
+
+        /**
+         * Updates the state (disabled/enabled) of navigation buttons.
+         */
+        function updateNavButtons() {
+            prevButton.disabled = currentImageIndex === 0;
+            nextButton.disabled = currentImageIndex === IMAGES_DATA.length - 1;
+        }
+
+        /**
+         * Shows the next image in the sequence.
+         */
+        function showNextImage() {
+            if (currentImageIndex < IMAGES_DATA.length - 1) {
+                displayFocusedImage(currentImageIndex + 1);
+            }
+        }
+
+        /**
+         * Shows the previous image in the sequence.
+         */
+        function showPrevImage() {
+            if (currentImageIndex > 0) {
+                displayFocusedImage(currentImageIndex - 1);
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+        prevButton.addEventListener('click', showPrevImage);
+        nextButton.addEventListener('click', showNextImage);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowLeft') {
+                showPrevImage();
+            } else if (event.key === 'ArrowRight') {
+                showNextImage();
+            }
+        });
+        
+        // Handle window resize to potentially re-layout collage if needed (optional improvement)
+        // window.addEventListener('resize', renderCollageArea); // Can be performance intensive
+
+        // --- INITIALIZATION ---
+        if (IMAGES_DATA.length > 0) {
+            displayFocusedImage(0); // Display the first image on load
+        } else {
+            // Handle case with no images
+            mainImageEl.alt = "No memories to display.";
+            imageCaptionEl.textContent = "Add some photos to start your scrapbook!";
+            collageAreaEl.innerHTML = "<p class='text-center text-gray-500'>No other images available.</p>";
+            showMessage("Welcome! Add your images to the IMAGES_DATA array in the script.", 5000);
+            prevButton.disabled = true;
+            nextButton.disabled = true;
+        }
+
+    </script>
+</body>
+</html>
